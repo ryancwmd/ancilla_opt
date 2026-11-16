@@ -1,0 +1,20 @@
+[project]
+name = "qdiff-ancilla"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "jax[cpu]>=0.10.2",
+    "matplotlib>=3.11.2",
+    "numpy>=2.4.6",
+    "optax>=0.2.9",
+    "pytest>=9.2.0",
+]
+
+[dependency-groups]
+dev = [
+    "pennylane>=0.45.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
