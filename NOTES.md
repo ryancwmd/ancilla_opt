@@ -137,3 +137,50 @@ or `reference_run_discrete` for cross-checks.
 
 **Open questions for the humans:** whether ±15% is the right "narrow band" for trained vs brute-force
 disagreement. The SmoothMax offset at β = 20 shifts the toy's effective peak gap from 1 to about 0.96.
+
+## [A] Simulator, noise, loss, training (2026-11-16)
+
+**Milestones:** A1, A2, A3 done. `uv run pytest` → `62 passed, 1 skipped` (skip = cross-check against B's
+`circuits.toy()`, which runs automatically once `circuits.py` is merged).
+
+**Files:** `sim.py`, `noise.py`, `loss.py`, `train.py`, `tests/test_sim.py`, `tests/test_noise.py`,
+`tests/test_loss.py`, plus `tests/toy_fixture.py` (see deviations).
+
+**Checks against the spec:** toy noiseless F = 1.0 for d = 0 and 1. Noisy toy F_hold/F_free =
+0.7337/0.6846, 0.5430/0.4745, 0.3060/0.2381 at s = 0.5, 1, 2 (matches the reference numbers). γ = 0.01489,
+λ = 0.02469, Tφ = 240 µs, p3 = 0.0585. Sweep flips (grid points): noiseless between λa 0.0197 and 0.0234;
+s = 0.5 between 0.065 and 0.077; s = 1 and 2 between 0.077 and 0.091, consistent with brute-force 0.02, 0.069, 0.088, 0.088.
+
+**API for B (integration):**
+- `sim.run_discrete(problem, d, noise=None) -> rho` (jitted; problem/d/noise are static, hashable).
+  Works for `ancillas=(), decisions=(), d=()` (tested).
+- `sim.fidelity(rho, psi)`, `sim.target_vector(problem)` (uses `target_state`, or computes it if empty).
+- `sim.simulate_mixture(problem, r, noise)` / `simulate_mixture_exact` (v1). `sim.schedule_fidelities(problem, noise)`
+  gives F_d for all d in `itertools.product((0,1), repeat=N)` order.
+- `noise.NoiseParams` (`.none()`, `.scaled(s)`, `.gamma`, `.lam`, `.to_dict()`), `noise.from_fake_backend(name)` (optional, untested; qiskit not installed).
+- `train.train(problem, noise, lam_a, lam_d=0.01, steps=300, lr=0.1, beta=(2, 20), seed=0, budget=None, out=None)`
+  → `TrainResult(z, r, history, config)`. `history` keys: loss, F, smoothmax, peak_term, depth_term, r (steps×N), beta, grad_norm.
+  `out=None` saves to `results/train_<name>_la<λ>_<noise>.json`, `out=False` skips saving.
+- `train.sweep_lambda(problem, base_noise=NoiseParams(), scales=(0, .5, 1, 2), lam_as=geomspace(.01, .3, 21), ..., keep_history=False, out=None)`
+  → `{"lam_a", "scales", "runs": {"0.0": {"r": [[r_i] per λ], "z", "final_F", "final_loss", "noise"}, ...}}`,
+  saved to `results/sweep_<name>.json`. Whole toy sweep (4 scales × 21 λ) takes ~10 s.
+- For figure 1 (r over training): call `train(...)` per λa and plot `history["r"]`.
+
+**Decisions / deviations:**
+- **v2 (`simulate_mixture` gap-local) not built** (stretch goal). `simulate_mixture` dispatches to v1.
+- **ρ_d caching:** the per-schedule density matrices don't depend on r, so `sim.schedule_rhos(problem, noise)`
+  computes them once (lru_cache), and the loss forms Σ_d w(d) ρ_d inside the differentiated function. Same math as v1,
+  but training never re-simulates the circuit. Gradients flow only through w(d), which is exact.
+- **Idle noise** = amplitude damping then phase damping, merged into one 3-operator Kraus set (the 4th product is 0).
+  Applied to every qubit untouched in a layer, data and ancilla alike, including unused ancilla qubits (they sit in |0⟩, unaffected).
+- **Depolarizing** applied in the trace form (1−p)ρ + p·Tr_qs ρ ⊗ I/2ᵏ, built as a composition of 1-qubit replacement maps;
+  tested equal to the 4ᵏ-term Kraus form for k = 1, 2, 3.
+- Zero-strength channels are skipped (so `NoiseParams.none()` leaves ρ bit-for-bit unchanged).
+- `scaled(s)` caps p at 1; with `p3=None`, p3 stays derived from the scaled p2 (1 − (1 − s·p2)⁶ rather than s·p3).
+  Pass an explicit `p3` to scale it linearly instead.
+- `train`'s `seed` is recorded but unused: z starts at 0 as specified and nothing else is random.
+- **`tests/toy_fixture.py`** (new file under tests/, not in A's list): `toy_problem()` returns B's `circuits.toy()` when importable,
+  else builds the toy from the spec. Also `two_gap_problem()`, A's own 9-qubit 2-decision Problem for testing N = 2 code paths
+  (not benchmark 2). B may delete it once `circuits.py` lands, if tests are switched to import `circuits` directly.
+
+**Blocking others:** nothing. **Open questions:** none beyond the doc's.
