@@ -184,3 +184,22 @@ s = 0.5 between 0.065 and 0.077; s = 1 and 2 between 0.077 and 0.091, consistent
   (not benchmark 2). B may delete it once `circuits.py` lands, if tests are switched to import `circuits` directly.
 
 **Blocking others:** nothing. **Open questions:** none beyond the doc's.
+
+## [I] Integration on main (2026-11-16)
+
+- Merged `agent-b` (fast-forward) and `agent-a` into `main`. Only conflict: NOTES.md, where both sections were kept.
+- **Fix in `experiments/toy.py`:** its signature-sniffing call to `train.sweep_lambda` passed already-scaled
+  noise as `base_noise` while A's default `scales` rescaled it, and it read a top-level `"r"` that A's result
+  doesn't have (A nests r under `runs[<s>]`). Now it calls `sweep_lambda(p, scales=NOISE_SCALES, lam_as=..., out=False)`
+  once and reads `runs[str(s)]["r"]`. That is the same noise as `get_backend("a")`. `train(...)` is called
+  with `out=False` so per-run JSON files don't pile up in `results/`; everything is in `results/toy.json`.
+  Training with `--backend reference` is now an error, since the trainer always uses A's simulator.
+- **Removed `tests/toy_fixture.py`** (A's suggestion): A's tests use `circuits.toy()` and `circuits.bench2()`.
+  bench2 replaces A's stand-in `two_gap_problem()`; its lifetimes are identical (a 0–10, b 2–4, c 6–8), so the
+  live-count expectations didn't change. A's spec-built-toy target check became
+  `test_target_matches_independent_statevector` (A's `sim.statevector` vs B's target, toy and bench2). The
+  redundant `test_toy_matches_b_reference_state` was dropped. `train.py`'s `__main__` imports `circuits` directly.
+- **toy.py results (300 steps, A's simulator):** brute-force flips 0.0200, 0.0691, 0.0884, 0.0879 at
+  s = 0, 0.5, 1, 2. Trained-and-rounded r matches brute force at all 84 sweep points, with 0 mismatches. The run
+  takes ~15 s. Training curve at s = 1, λa = 0.1: r first drops to ~0.17, then rises to 0.88. Early on, β = 2
+  makes SmoothMax barely separate a peak of 2 from a peak of 1, so infidelity dominates until β grows.

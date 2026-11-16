@@ -171,12 +171,7 @@ def sweep_lambda(problem: Problem, base_noise: NoiseParams | None = None, scales
 
 
 if __name__ == "__main__":  # quick smoke run on the toy
-    import sys
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "tests"))
-    try:
-        from circuits import toy
-    except ImportError:
-        from toy_fixture import toy_from_spec as toy
+    from circuits import toy
     p = toy()
     for la in (0.01, 0.1):
         res = train(p, NoiseParams.none(), la, out=False)

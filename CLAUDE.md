@@ -28,27 +28,34 @@ Status: committed to `main`. Stdlib only, imports on Python 3.8+ (checked with 3
 
 Checked values on the toy: logical layers 7 and 7, physical layers 7 and 9, and b moves onto qubit 4 when freed.
 
-## Workstream B status (branch `agent-b`)
+## Integration status (`main`)
 
-- [x] Environment (uv, Python 3.11, pinned `requirements.txt`) and git repo
-- [x] `problem.py` on main
-- [x] B1: `circuits.toy()`, statevector reference, `fill_target`, validation tests (one per rule)
-- [x] B2: `evaluate.py`: rounding, live intervals and counts, peak, assignment, depth, 2q-equiv, `fill_costs`, `evaluate`
-- [x] B3: `baselines.py` (`no_reuse`, `hold_all_reassigned`, `brute_force`, `flip_thresholds`), `circuits.bench2()`
-  with its hand-computed table, and `experiments/benchmarks.py` writing `results/benchmarks.{json,md}`
-- [~] I: `experiments/toy.py` written and smoke-tested with a fake trainer; waits on A's merged `train.py`/`sim.py`/`noise.py`
-- Tests: `uv run pytest tests/test_circuits.py tests/test_evaluate.py`, 52 passed
+`agent-a` and `agent-b` are merged into `main` (checkpoint after A3 and B2/B3). `uv run pytest`: 115 passed.
+`agent-c` has not started. New work branches from `main`.
 
-### Things other agents should know (details in NOTES.md, section [B] Report)
+- [x] A1–A3: `sim.py`, `noise.py`, `loss.py`, `train.py` (v1 exact mixture; v2 gap-local not built)
+- [x] B1–B3: `problem.py`, `circuits.py`, `evaluate.py`, `baselines.py`, `circuits.bench2()`, `experiments/benchmarks.py`
+- [x] I: `uv run python experiments/toy.py` (~15 s) writes `figures/toy_{training,lambda_sweep}.png`,
+  `results/toy_table.{md,json}` and `results/toy.json`. Trained-and-rounded r matches brute force at all
+  84 sweep points (4 noise scales × 21 λa).
+- [ ] C1–C3: Reqomp. When C2 lands, rerun `toy.py`; it adds Reqomp rows to the table automatically.
+- [ ] Optional: v2 `simulate_mixture`, budget-mode figures, benchmark 2 through the trainer.
 
-- **A**: `circuits.toy()` and `circuits.bench2()` give validated Problems with target states.
-  `circuits.reference_state(p, d)` is the noiseless numpy state of the physical schedule.
-  `circuits.reference_run_discrete(p, d, noise)` is a numpy noisy cross-check that reproduces the doc's
-  reference fidelities. `run_discrete` must accept a Problem with `ancillas=()`, `decisions=()` and `d=()`,
-  which `baselines.no_reuse` uses. `toy.py` expects `train(...)` to return `.r` and `.history`, with per-step `r`.
+## Module quick reference
+
+- **A**: `sim.run_discrete(p, d, noise)` (jitted; works for `ancillas=(), decisions=(), d=()`),
+  `sim.simulate_mixture(p, r, noise)` (= v1 `simulate_mixture_exact`), `sim.schedule_fidelities(p, noise)`,
+  `sim.fidelity`, `sim.target_vector`. `noise.NoiseParams` with `.none()`, `.scaled(s)`.
+  `train.train(p, noise, lam_a, lam_d=0.01, steps=300, ..., out=None)` → `TrainResult(z, r, history, config)`,
+  `history` a dict of per-step arrays (`r` is steps × N). Pass `out=False` to skip its JSON file.
+  `train.sweep_lambda(p, base_noise=NoiseParams(), scales=(0, .5, 1, 2), lam_as=..., out=None)` →
+  `{"runs": {"<s>": {"r": [[r_i] per λa], ...}}}`; noise per run is `base_noise.scaled(s)`.
+- **B**: `circuits.toy()` and `circuits.bench2()` give validated Problems with target states (A's tests use
+  them directly). `circuits.reference_state` / `reference_run_discrete` are numpy cross-checks.
+  `evaluate.evaluate(p, d, noise, simulator=sim.run_discrete)` gives exact metrics.
+  `baselines.brute_force(p, noise, lam_a, lam_d, simulator=sim.run_discrete)`; use `baselines.schedule_table`
+  with `baselines.flip_thresholds` for exact λa flip points.
 - **C**: the hand-written Problems are in `results/problems/{toy,bench2}.json` (`fill_costs` applied) for the
   C3 acceptance check. `toy.py` reads `reqomp_adapter/results/toy.json` as a list under `"runs"` with
   `budget`, `qubits`, `depth`, `two_qubit_equiv`.
-- Noise objects are duck-typed. Anything with `p1`, `p2`, `p3`, `t_layer_us`, `T1_us` and `T2_us` works in B's code.
-- Brute force: `B.brute_force(p, noise, lam_a, lam_d, simulator=sim.run_discrete)`. Use
-  `B.schedule_table` with `B.flip_thresholds` for exact λa flip points.
+- Noise objects are duck-typed in B's code: anything with `p1`, `p2`, `p3`, `t_layer_us`, `T1_us`, `T2_us`.

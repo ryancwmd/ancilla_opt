@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import problem as P
 import sim
 from noise import NoiseParams
-from toy_fixture import toy_problem, toy_from_spec, two_gap_problem
+from circuits import bench2, toy as toy_problem
 
 TOL = 1e-10
 
@@ -160,20 +160,13 @@ def test_toy_noiseless_fidelity_one(toy, d):
     assert np.max(np.abs(np.asarray(rho) - np.outer(psi, psi.conj()))) < TOL
 
 
-def test_toy_target_matches_spec_reference(toy):
-    # B's target_state (from circuits.py's numpy reference when available)
-    # equals A's independent statevector of prep + base gates.
-    ref = np.array(toy_from_spec().target_state)
-    assert np.max(np.abs(np.array(toy.target_state) - ref)) < TOL
-
-
-def test_toy_matches_b_reference_state():
-    circuits = pytest.importorskip("circuits")
-    p = circuits.toy()
-    psi = np.array(p.target_state)
-    for d in [(0,), (1,)]:
-        rho = np.asarray(sim.run_discrete(p, d, NoiseParams.none()))
-        assert np.max(np.abs(rho - np.outer(psi, psi.conj()))) < TOL
+@pytest.mark.parametrize("make", [toy_problem, bench2])
+def test_target_matches_independent_statevector(make):
+    # B's target_state (circuits.py's numpy reference) equals A's independent
+    # statevector of prep + base gates.
+    p = make()
+    ref = np.asarray(sim.statevector(list(p.prep) + list(p.gates), p.n_qubits))
+    assert np.max(np.abs(np.array(p.target_state) - ref)) < TOL
 
 
 @pytest.mark.parametrize("s,f_hold,f_free", [(0.5, 0.734, 0.685), (1.0, 0.543, 0.475), (2.0, 0.306, 0.238)])
@@ -209,7 +202,7 @@ def test_schedule_weights_two_decisions():
 
 
 def test_two_decision_mixture_and_noiseless_fidelity():
-    p = two_gap_problem()
+    p = bench2()
     P.validate(p)
     F0 = sim.schedule_fidelities(p, NoiseParams.none())
     np.testing.assert_allclose(F0, 1.0, atol=TOL)

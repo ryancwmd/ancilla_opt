@@ -17,7 +17,6 @@ exists. Produces (instructions.md, "Outputs and reporting back"):
 from __future__ import annotations
 
 import argparse
-import inspect
 import json
 import time
 
@@ -115,37 +114,20 @@ def r_history(hist) -> np.ndarray:
 
 
 def train_one(train_mod, p, noise, lam_a, lam_d, steps, seed=0):
-    res = train_mod.train(p, noise, lam_a, lam_d=lam_d, steps=steps, seed=seed)
+    res = train_mod.train(p, noise, lam_a, lam_d=lam_d, steps=steps, seed=seed, out=False)
     return {"r_final": np.asarray(res.r, dtype=float).reshape(-1).tolist(),
             "r_history": r_history(res.history).tolist()}
 
 
-def sweep(train_mod, p, noise, lams, lam_d, steps) -> tuple[np.ndarray, str]:
-    """Final r per lam_a, shape (len(lams), N). Uses A's sweep_lambda when its
-    signature is recognisable, otherwise one train() call per lam_a."""
-    fn = getattr(train_mod, "sweep_lambda", None)
-    if fn is not None:
-        params = inspect.signature(fn).parameters
-        lam_kw = next((k for k in ("lam_as", "lam_a", "lams", "lambdas", "lam_values") if k in params), None)
-        if lam_kw is not None:
-            kw = {lam_kw: np.asarray(lams)}
-            if "lam_d" in params:
-                kw["lam_d"] = lam_d
-            if "steps" in params:
-                kw["steps"] = steps
-            if "noise" in params:
-                kw["noise"] = noise
-                out = fn(p, **kw)
-            else:
-                out = fn(p, noise, **kw)
-            if isinstance(out, dict):
-                out = out.get("r", out.get("r_final"))
-            if hasattr(out, "r"):
-                out = out.r
-            arr = np.asarray(out, dtype=float)
-            return arr.reshape(len(lams), -1), "train.sweep_lambda"
-    rs = [train_mod.train(p, noise, lam, lam_d=lam_d, steps=steps).r for lam in lams]
-    return np.asarray(rs, dtype=float).reshape(len(lams), -1), "train.train loop"
+def sweep(train_mod, p, scales, lams, lam_d, steps) -> dict[str, np.ndarray]:
+    """Final r per noise scale, each of shape (len(lams), N), from A's train.sweep_lambda:
+    one jitted trainer vmapped over lam_a. A builds the noise as NoiseParams().scaled(s)
+    (s = 0 -> NoiseParams.none()), the same noise get_backend("a") gives. Results are
+    kept in results/toy.json, so sweep_lambda's own JSON is not written."""
+    res = train_mod.sweep_lambda(p, scales=tuple(scales), lam_as=np.asarray(lams), lam_d=lam_d,
+                                 steps=steps, out=False)
+    return {str(float(s)): np.asarray(res["runs"][str(float(s))]["r"], dtype=float).reshape(len(lams), -1)
+            for s in scales}
 
 
 def mismatch_report(lams, r_final, table, flips, lam_d) -> list[dict]:
@@ -273,6 +255,8 @@ def main():
     t_start = time.time()
 
     make_noise, simulator, label = get_backend(args.backend)
+    if not args.no_train and not label.startswith("A:"):
+        ap.error("training uses A's simulator; use --backend a (or auto) or pass --no-train")
     p = E.fill_costs(circuits.toy())
     cfg = {"script": "experiments/toy.py", "backend": label, "lam_d": args.lam_d, "steps": steps,
            "train_lams": TRAIN_LAMS, "train_scales": TRAIN_SCALES, "sweep_lams": SWEEP_LAMS,
@@ -306,15 +290,17 @@ def main():
         plot_training(training, cfg, FIGURES / "toy_training.png")
 
         sweeps, mismatches = {}, {}
+        t0 = time.time()
+        r_by_scale = sweep(train_mod, p, NOISE_SCALES, SWEEP_LAMS, args.lam_d, steps)
+        print("sweep: %d noise scales x %d lam_a via train.sweep_lambda (%.1fs)"
+              % (len(NOISE_SCALES), len(SWEEP_LAMS), time.time() - t0))
         for s in NOISE_SCALES:
-            t0 = time.time()
-            r_final, how = sweep(train_mod, p, make_noise(s), SWEEP_LAMS, args.lam_d, steps)
-            sweeps[str(s)] = {"r_final": r_final.tolist(), "method": how,
+            r_final = r_by_scale[str(s)]
+            sweeps[str(s)] = {"r_final": r_final.tolist(), "method": "train.sweep_lambda",
                               "rounded": [E.round_decisions(r) for r in r_final]}
             mismatches[str(s)] = mismatch_report(SWEEP_LAMS, r_final, tables[str(s)], flips[str(s)], args.lam_d)
-            print("sweep s=%g via %s (%.1fs): %d mismatches with brute force, %d outside the band"
-                  % (s, how, time.time() - t0, len(mismatches[str(s)]),
-                     sum(not m["near_threshold"] for m in mismatches[str(s)])))
+            print("sweep s=%g: %d mismatches with brute force, %d outside the band"
+                  % (s, len(mismatches[str(s)]), sum(not m["near_threshold"] for m in mismatches[str(s)])))
         plot_sweep(sweeps, flips, cfg, FIGURES / "toy_lambda_sweep.png")
         out.update(training=training, sweep=sweeps, mismatches=mismatches)
         bad = [(s, m) for s, ms in mismatches.items() for m in ms if not m["near_threshold"]]

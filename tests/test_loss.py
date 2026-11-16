@@ -8,7 +8,7 @@ import loss as L
 import sim
 import train as T
 from noise import NoiseParams
-from toy_fixture import toy_problem, two_gap_problem
+from circuits import bench2, toy as toy_problem
 
 TOL = 1e-10
 
@@ -24,8 +24,8 @@ def test_toy_live_counts(toy, r):
     np.testing.assert_allclose(x, [1, 1, 2 - r, 2 - r, 2 - r, 1, 1], atol=TOL)
 
 
-def test_two_gap_live_counts():
-    p = two_gap_problem()
+def test_bench2_live_counts():
+    p = bench2()
     x = np.asarray(L.live_counts(p, jnp.array([0.25, 0.5])))
     # a: 0..10; b: 2..4 (gap1 = 2..4); c: 6..8 (gap2 = 6..8)
     np.testing.assert_allclose(x, [1, 1, 1.75, 1.75, 1.75, 1, 1.5, 1.5, 1.5, 1, 1], atol=TOL)
@@ -63,7 +63,7 @@ def test_grad_matches_finite_differences_toy(toy, noisy, budget):
 
 
 def test_grad_matches_finite_differences_two_decisions():
-    p = two_gap_problem()
+    p = bench2()
     data = L.make_loss_data(p, NoiseParams())
     f = lambda z: L.loss_terms(z, data, 0.05, 0.01, 8.0)[0]
     z = jnp.array([0.4, -0.9])
