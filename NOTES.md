@@ -44,3 +44,96 @@ Each entry is tagged with its workstream letter. Append; don't rewrite others' e
   no-reassignment circuit through A's `run_discrete(problem, d=(), noise)`. **A: please keep `run_discrete`
   working for a Problem with no ancillas and no decisions.**
 - `target_state` tolerance in rule 6: |norm − 1| ≤ 1e-8.
+
+## [B] Benchmark 2 (`circuits.bench2()`)
+
+9 qubits: 0=c1 1=c2 2=c3 3=c4 4=a 5=b 6=c 7=t1 8=t2. Prep: h on 0–3.
+
+| Step | Gate | Role |
+| --- | --- | --- |
+| 0 | ccx(0,1,4) | compute a = c1 AND c2 |
+| 1 | ccx(4,2,7) | use 1 of a |
+| 2 | ccx(2,3,5) | compute b = c3 AND c4 |
+| 3 | cx(5,8) | use b |
+| 4 | ccx(2,3,5) | uncompute b |
+| 5 | ccx(4,3,8) | use 2 of a |
+| 6 | ccx(1,2,6) | compute c = c2 AND c3 |
+| 7 | cx(6,7) | use c |
+| 8 | ccx(1,2,6) | uncompute c |
+| 9 | ccx(4,3,7) | use 3 of a |
+| 10 | ccx(0,1,4) | final uncompute of a |
+
+Ancillas: a = (4, 0, 10), b = (5, 2, 4), c = (6, 6, 8). Decisions: `a_gap1` (free_after 1, recompute_before 5)
+and `a_gap2` (free_after 5, recompute_before 9). Hand-computed table, physical schedules (also in
+`tests/test_evaluate.py`):
+
+| d | live counts, steps 0–10 | peak | physical qubits | depth | extra 2q-equiv | noiseless F |
+| --- | --- | --- | --- | --- | --- | --- |
+| 00 | 1 1 2 2 2 1 2 2 2 1 1 | 2 | 8 (b and c share qubit 5) | 9 | 0 | 1 |
+| 10 | 1 1 1 1 1 1 2 2 2 1 1 | 2 | 8 | 11 | 12 | 1 |
+| 01 | 1 1 2 2 2 1 1 1 1 1 1 | 2 | 8 | 13 | 12 | 1 |
+| 11 | all 1 | 1 | 7 | 15 | 24 | 1 |
+
+No-reuse baseline: 9 physical qubits, depth 9. Design points: freeing only one gap never lowers the peak, so
+the decisions are not separable (the only brute-force flip goes from 00 straight to 11). Gap 2 costs more
+depth than gap 1 (4 layers against 2) because c's compute shares control c2 with a's compute and serialises.
+Without reassignment the logical depths are 9, 9, 13, 13: gap 1's uncompute runs beside b's compute. And b
+and c never overlap, so reassignment merges them even when everything is held. That is the case in the loss
+section where the Δᵢ baseline must be the physical hold schedule.
+
+## [B] Report (2026-11-16)
+
+**Milestones:** B1, B2 and B3 are done. The integration script (I) is written and smoke-tested, but it waits
+on A's `train.py`, `sim.py` and `noise.py`. pytest on `agent-b`: `52 passed`.
+
+**Files:** `problem.py` (on main), `circuits.py`, `evaluate.py`, `baselines.py`, `experiments/common.py`,
+`experiments/benchmarks.py`, `experiments/toy.py`, `tests/test_circuits.py`, `tests/test_evaluate.py`,
+`results/benchmarks.{json,md}`, `results/toy_table.{json,md}`, `results/toy.json`,
+`results/problems/{toy,bench2}.json` (fill_costs applied, for A and C).
+
+**Checks against the doc:** every value in the toy's hand-computed table matches. The numpy noisy reference
+reproduces the doc's reference numbers to 3 decimals: F_hold 0.7337, 0.5430, 0.3060 and F_free 0.6846,
+0.4745, 0.2381 at s = 0.5, 1, 2. Exact brute-force flips are 0.0200 noiseless, then 0.0691, 0.0884, 0.0879.
+No hand-computed value in the doc looked wrong. One editorial issue: the toy's "Reference numbers" paragraph
+appears twice in instructions.md.
+
+**Findings so far (reference backend):** the toy flip falls slightly from s = 1 to s = 2 (0.0884 to 0.0879),
+because both fidelities drop by about the same amount. Bench2's flip (00 to 11) is 0.060 noiseless, then
+0.185, 0.2015 and 0.155 at s = 0.5, 1, 2. That is non-monotone in noise and lies inside the planned sweep range.
+
+**Deviations and additions:**
+- `evaluate.fidelity`/`evaluate` raise `ValueError` if given *noisy* parameters without a simulator, instead
+  of silently returning a noiseless number. `None` or all-zero noise such as `NoiseParams.none()` is fine.
+- `circuits.reference_run_discrete(problem, d, noise)` is a numpy density-matrix stand-in with the same
+  signature as A's `run_discrete`. `circuits.RefNoise` mirrors `NoiseParams`' fields, defaults, `none()` and
+  `scaled()`. Both are for cross-checks and for running before A lands; reported numbers should use A's.
+  The reference applies depolarizing noise as a product of one-qubit twirls and idle noise as a closed-form
+  block update. Tests check both against the Kraus and Pauli-sum forms.
+- `baselines.brute_force(problem, noise, lam_a, lam_d=0.01, simulator=None, table=None)`: the optional
+  `table` reuses one `schedule_table` across many λa. Exact ties go to the earlier schedule in binary
+  counting order, so holding wins a tie. Added `flip_thresholds(table, lam_d)`: J is linear in λa, so the
+  exact flip points come from the lower envelope.
+- `two_qubit_equiv` counts the logical schedule's gates. That is the same multiset as the physical schedule.
+- `baselines.no_reuse` runs `simulator(replace(problem, ancillas=(), decisions=()), (), noise)`. See the
+  problem.py note: **A's run_discrete must accept a Problem with no ancillas or decisions.**
+- `experiments/toy.py`, flags `--no-train`, `--quick`, `--backend`, `--steps`:
+  - A trained-and-rounded schedule that disagrees with brute force counts as "near threshold" if λa is within
+    ±15% of a brute-force flip (`BAND_REL`). Anything outside the band is printed as a WARNING.
+  - Expected from A: `train.train(problem, noise, lam_a, lam_d=..., steps=..., seed=...)` returns an object
+    with `.r` (shape (N,)) and `.history`. `.history` is a list of per-step dicts with key `"r"`, or a dict of
+    lists with key `"r"`.
+  - `train.sweep_lambda` is used if its λ argument is named one of `lam_as`, `lam_a`, `lams`, `lambdas`,
+    `lam_values`. It should return final r with shape (n_lambda, N), or a dict or object with `r`. Otherwise
+    the script loops over `train.train`.
+
+**Blocking other workstreams:** nothing. A can use `circuits.toy()`/`bench2()` and `circuits.reference_state`
+or `reference_run_discrete` for cross-checks.
+
+**Waiting on:**
+- A: `train.py`, `sim.py` and `noise.py` merged, for `experiments/toy.py` and the figures.
+- C: `reqomp_adapter/results/toy.json`. `toy.py` reads a list under `"runs"` (or `"budgets"`). Each entry
+  should have `budget`, `qubits`, `depth`, `two_qubit_equiv`, and optionally `peak_ancillas` and
+  `fidelity_<s>`. Other key names are tried defensively.
+
+**Open questions for the humans:** whether ±15% is the right "narrow band" for trained vs brute-force
+disagreement. The SmoothMax offset at β = 20 shifts the toy's effective peak gap from 1 to about 0.96.

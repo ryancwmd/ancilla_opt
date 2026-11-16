@@ -1,0 +1,516 @@
+{
+ "config": {
+  "script": "experiments/toy.py",
+  "backend": "B: circuits.reference_run_discrete (numpy cross-check)",
+  "lam_d": 0.01,
+  "steps": 300,
+  "train_lams": [
+   0.01,
+   0.1,
+   1.0
+  ],
+  "train_scales": [
+   0.0,
+   1.0
+  ],
+  "sweep_lams": [
+   0.01,
+   0.011853758165593082,
+   0.01405115826483646,
+   0.016655903201784592,
+   0.019743504858348197,
+   0.02340347319320716,
+   0.02774191114672182,
+   0.03288459057846113,
+   0.03898059840916188,
+   0.04620665866923074,
+   0.05477225575051662,
+   0.06492570738506387,
+   0.0769613634072608,
+   0.09122813899239939,
+   0.10813962975130148,
+   0.1281861019188702,
+   0.15194870523363546,
+   0.18011632054145027,
+   0.2135055305374796,
+   0.2530842926007932,
+   0.29999999999999993
+  ],
+  "noise_scales": [
+   0.0,
+   0.5,
+   1.0,
+   2.0
+  ],
+  "band_rel": 0.15,
+  "seed": 0,
+  "git": "74dca3c",
+  "noise": {
+   "0.0": {
+    "p1": 0.0,
+    "p2": 0.0,
+    "p3": 0.0,
+    "t_layer_us": 3.0,
+    "T1_us": "inf",
+    "T2_us": "inf",
+    "source": "none"
+   },
+   "0.5": {
+    "p1": 0.0005,
+    "p2": 0.005,
+    "p3": null,
+    "t_layer_us": 3.0,
+    "T1_us": 400.0,
+    "T2_us": 300.0,
+    "source": "defaults x0.5"
+   },
+   "1.0": {
+    "p1": 0.001,
+    "p2": 0.01,
+    "p3": null,
+    "t_layer_us": 3.0,
+    "T1_us": 200.0,
+    "T2_us": 150.0,
+    "source": "defaults x1"
+   },
+   "2.0": {
+    "p1": 0.002,
+    "p2": 0.02,
+    "p3": null,
+    "t_layer_us": 3.0,
+    "T1_us": 100.0,
+    "T2_us": 75.0,
+    "source": "defaults x2"
+   }
+  }
+ },
+ "table": [
+  {
+   "schedule": "no reuse",
+   "d": [
+    0
+   ],
+   "peak_ancillas": 2,
+   "physical_qubits": 8,
+   "depth": 7,
+   "two_qubit_equiv": 37,
+   "fidelity": {
+    "0.0": 0.9999999999999983,
+    "0.5": 0.7337104902365972,
+    "1.0": 0.5429587812074812,
+    "2.0": 0.30595807850393875
+   }
+  },
+  {
+   "schedule": "hold, reassigned",
+   "d": [
+    0
+   ],
+   "peak_ancillas": 2,
+   "physical_qubits": 8,
+   "depth": 7,
+   "two_qubit_equiv": 37,
+   "fidelity": {
+    "0.0": 0.9999999999999983,
+    "0.5": 0.7337104902365972,
+    "1.0": 0.5429587812074812,
+    "2.0": 0.30595807850393875
+   }
+  },
+  {
+   "schedule": "free (d = 1)",
+   "d": [
+    1
+   ],
+   "peak_ancillas": 1,
+   "physical_qubits": 7,
+   "depth": 9,
+   "two_qubit_equiv": 49,
+   "fidelity": {
+    "0.0": 0.9999999999999983,
+    "0.5": 0.6845656450726063,
+    "1.0": 0.47452627550612736,
+    "2.0": 0.23809917364972033
+   }
+  }
+ ],
+ "brute_force": {
+  "tables": {
+   "0.0": [
+    {
+     "d": [
+      0
+     ],
+     "live_counts": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      1,
+      1
+     ],
+     "peak_ancillas": 2,
+     "ancilla_qubits_used": 2,
+     "physical_qubits": 8,
+     "assignment": [
+      [
+       4,
+       0,
+       6,
+       4
+      ],
+      [
+       5,
+       2,
+       4,
+       5
+      ]
+     ],
+     "depth": 7,
+     "extra_depth": 0,
+     "two_qubit_equiv": 37,
+     "extra_2q": 0,
+     "n_gates": 7,
+     "fidelity": 0.9999999999999983
+    },
+    {
+     "d": [
+      1
+     ],
+     "live_counts": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "peak_ancillas": 1,
+     "ancilla_qubits_used": 1,
+     "physical_qubits": 7,
+     "assignment": [
+      [
+       4,
+       0,
+       1,
+       4
+      ],
+      [
+       4,
+       5,
+       6,
+       4
+      ],
+      [
+       5,
+       2,
+       4,
+       4
+      ]
+     ],
+     "depth": 9,
+     "extra_depth": 2,
+     "two_qubit_equiv": 49,
+     "extra_2q": 12,
+     "n_gates": 9,
+     "fidelity": 0.9999999999999983
+    }
+   ],
+   "0.5": [
+    {
+     "d": [
+      0
+     ],
+     "live_counts": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      1,
+      1
+     ],
+     "peak_ancillas": 2,
+     "ancilla_qubits_used": 2,
+     "physical_qubits": 8,
+     "assignment": [
+      [
+       4,
+       0,
+       6,
+       4
+      ],
+      [
+       5,
+       2,
+       4,
+       5
+      ]
+     ],
+     "depth": 7,
+     "extra_depth": 0,
+     "two_qubit_equiv": 37,
+     "extra_2q": 0,
+     "n_gates": 7,
+     "fidelity": 0.7337104902365972
+    },
+    {
+     "d": [
+      1
+     ],
+     "live_counts": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "peak_ancillas": 1,
+     "ancilla_qubits_used": 1,
+     "physical_qubits": 7,
+     "assignment": [
+      [
+       4,
+       0,
+       1,
+       4
+      ],
+      [
+       4,
+       5,
+       6,
+       4
+      ],
+      [
+       5,
+       2,
+       4,
+       4
+      ]
+     ],
+     "depth": 9,
+     "extra_depth": 2,
+     "two_qubit_equiv": 49,
+     "extra_2q": 12,
+     "n_gates": 9,
+     "fidelity": 0.6845656450726063
+    }
+   ],
+   "1.0": [
+    {
+     "d": [
+      0
+     ],
+     "live_counts": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      1,
+      1
+     ],
+     "peak_ancillas": 2,
+     "ancilla_qubits_used": 2,
+     "physical_qubits": 8,
+     "assignment": [
+      [
+       4,
+       0,
+       6,
+       4
+      ],
+      [
+       5,
+       2,
+       4,
+       5
+      ]
+     ],
+     "depth": 7,
+     "extra_depth": 0,
+     "two_qubit_equiv": 37,
+     "extra_2q": 0,
+     "n_gates": 7,
+     "fidelity": 0.5429587812074812
+    },
+    {
+     "d": [
+      1
+     ],
+     "live_counts": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "peak_ancillas": 1,
+     "ancilla_qubits_used": 1,
+     "physical_qubits": 7,
+     "assignment": [
+      [
+       4,
+       0,
+       1,
+       4
+      ],
+      [
+       4,
+       5,
+       6,
+       4
+      ],
+      [
+       5,
+       2,
+       4,
+       4
+      ]
+     ],
+     "depth": 9,
+     "extra_depth": 2,
+     "two_qubit_equiv": 49,
+     "extra_2q": 12,
+     "n_gates": 9,
+     "fidelity": 0.47452627550612736
+    }
+   ],
+   "2.0": [
+    {
+     "d": [
+      0
+     ],
+     "live_counts": [
+      1,
+      1,
+      2,
+      2,
+      2,
+      1,
+      1
+     ],
+     "peak_ancillas": 2,
+     "ancilla_qubits_used": 2,
+     "physical_qubits": 8,
+     "assignment": [
+      [
+       4,
+       0,
+       6,
+       4
+      ],
+      [
+       5,
+       2,
+       4,
+       5
+      ]
+     ],
+     "depth": 7,
+     "extra_depth": 0,
+     "two_qubit_equiv": 37,
+     "extra_2q": 0,
+     "n_gates": 7,
+     "fidelity": 0.30595807850393875
+    },
+    {
+     "d": [
+      1
+     ],
+     "live_counts": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+     ],
+     "peak_ancillas": 1,
+     "ancilla_qubits_used": 1,
+     "physical_qubits": 7,
+     "assignment": [
+      [
+       4,
+       0,
+       1,
+       4
+      ],
+      [
+       4,
+       5,
+       6,
+       4
+      ],
+      [
+       5,
+       2,
+       4,
+       4
+      ]
+     ],
+     "depth": 9,
+     "extra_depth": 2,
+     "two_qubit_equiv": 49,
+     "extra_2q": 12,
+     "n_gates": 9,
+     "fidelity": 0.23809917364972033
+    }
+   ]
+  },
+  "flip_thresholds": {
+   "0.0": [
+    {
+     "lam_a": 0.02,
+     "from": [
+      0
+     ],
+     "to": [
+      1
+     ]
+    }
+   ],
+   "0.5": [
+    {
+     "lam_a": 0.06914484516399089,
+     "from": [
+      0
+     ],
+     "to": [
+      1
+     ]
+    }
+   ],
+   "1.0": [
+    {
+     "lam_a": 0.08843250570135386,
+     "from": [
+      0
+     ],
+     "to": [
+      1
+     ]
+    }
+   ],
+   "2.0": [
+    {
+     "lam_a": 0.08785890485421843,
+     "from": [
+      0
+     ],
+     "to": [
+      1
+     ]
+    }
+   ]
+  }
+ },
+ "seconds": 1.5745954513549805
+}
