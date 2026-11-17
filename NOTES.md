@@ -203,3 +203,27 @@ s = 0.5 between 0.065 and 0.077; s = 1 and 2 between 0.077 and 0.091, consistent
   s = 0, 0.5, 1, 2. Trained-and-rounded r matches brute force at all 84 sweep points, with 0 mismatches. The run
   takes ~15 s. Training curve at s = 1, λa = 0.1: r first drops to ~0.17, then rises to 0.88. Early on, β = 2
   makes SmoothMax barely separate a peak of 2 from a peak of 1, so infidelity dominates until β grows.
+
+## [I] Benchmark 2 through the trainer (2026-11-17)
+
+- `experiments/toy.py` is now `experiments/integration.py --problem <toy|bench2>` (default toy, same output
+  file names as before). Figures have one panel or row per decision; the table lists every schedule that frees
+  at least one gap; Reqomp rows are read from `reqomp_adapter/results/<p>.json`.
+- `experiments/benchmarks.py --backend a` rerun on A's simulator: every value matches the numpy reference to
+  4 decimals (toy and bench2), so `results/benchmarks.{json,md}` now cite A's backend.
+- **bench2 results (300 steps, A's simulator):** brute-force flips 0.0600, 0.1850, 0.2015, 0.1551 at
+  s = 0, 0.5, 1, 2, each from 00 straight to 11. Trained-and-rounded r matches brute force at all 84 sweep
+  points with 0 mismatches. Both decisions flip together at every noise scale; a_gap2 (extra depth 4) ends
+  slightly lower than a_gap1 (extra depth 2) just above each flip. Runs in ~50 s.
+- **`experiments/landscape.py`** (two-decision Problems): evaluates `loss.loss_terms` at the final β = 20 on a
+  121 x 121 grid over (r1, r2), trains each λa with `train.train`, and draws `figures/<p>_landscape.png` from
+  `results/<p>_landscape.json` (`--replot` redraws without recomputing). bench2 at s = 1, λa = 0.1, 0.22,
+  0.3: trained-and-rounded 00, 11, 11, equal to brute force. The 01 and 10 corners are the high-loss corners in
+  every panel, and above the flip a diagonal valley runs toward 11. At λa = 0.22 and 0.3 the path first heads
+  toward 00 while β is small, then turns up the valley to 11. Shared figure palette and helpers moved to
+  `experiments/common.py`.
+- **`experiments/circuit_figure.py`** draws `figures/circuits.png` (both benchmarks) from each Problem's gates,
+  ancillas and decisions: lifetimes shaded, decision gaps hatched, live counts for hold-all and free-all.
+- **Progress report:** `website/build.py` fills `website/progress_source.html` from `results/*.json` (tables,
+  flip-point check, match counts) and inlines the figures, writing the standalone `website/progress.html`.
+  Rebuild after rerunning experiments: `uv run python website/build.py`.

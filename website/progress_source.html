@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Differentiable Ancilla Reuse: Progress Report</title>
+<style>
+  :root {
+    --bg: #F3F8FF;
+    --ink: #2B2140;
+    --ink-2: #5B5070;
+    --accent: #4A2A78;
+    --accent-2: #7A4DB5;
+    --accent-3: #C98BCB;
+    --card: #FFFFFF;
+    --rule: #DDD3EA;
+    --tint: #EEE6F7;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 0 16px 72px; }
+  header {
+    margin: 0 -16px 8px;
+    padding: 48px 16px 28px;
+    border-bottom: 3px solid var(--accent-3);
+  }
+  .eyebrow { color: var(--accent-2); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; font-size: 13px; margin: 0; }
+  h1 { color: var(--accent); font-size: clamp(28px, 5vw, 38px); line-height: 1.2; margin: 8px 0 12px; }
+  .byline { color: var(--ink-2); margin: 0; font-size: 15px; }
+  h2 {
+    color: var(--accent);
+    font-size: 23px;
+    margin: 48px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+  h3 { color: var(--accent-2); font-size: 18px; margin: 28px 0 8px; }
+  p, li { max-width: 72ch; }
+  a { color: var(--accent-2); }
+  strong { color: var(--accent); }
+  .objective {
+    background: var(--card);
+    border-left: 4px solid var(--accent-2);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 18px;
+    font-size: 17px;
+    margin: 20px 0;
+  }
+  .callout {
+    background: var(--tint);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin: 18px 0;
+  }
+  .callout p { margin: 6px 0; }
+  .status { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 20px 20px 22px; margin: 22px 0 8px; }
+  .status h2 { margin: 0 0 8px; padding: 0; border: 0; font-size: 20px; }
+  .status > p { margin: 0 0 16px; }
+  .meter-row { display: flex; align-items: center; gap: 14px; margin: 0 0 18px; }
+  .meter { flex: 1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+  .meter span { height: 10px; border-radius: 5px; background: var(--rule); }
+  .meter span.on { background: var(--accent-2); }
+  .meter-label { color: var(--accent); font-weight: 600; font-size: 14px; white-space: nowrap; }
+  .stages { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+  .stages li { max-width: none; min-width: 0; border-radius: 12px; padding: 12px 14px 14px; background: var(--bg); border: 1px solid var(--rule); }
+  .stages li.next { background: var(--card); border: 1.5px dashed var(--accent-3); }
+  .stage-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .stage-num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: #fff; background: var(--accent-2); }
+  .next .stage-num { color: var(--accent-2); background: var(--tint); }
+  .stage-title { font-weight: 700; color: var(--accent); line-height: 1.3; }
+  .pill { margin-left: auto; flex: none; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 1px 9px; background: var(--accent); color: #fff; }
+  .next .pill { background: transparent; color: var(--accent-2); border: 1px solid var(--accent-3); }
+  .stages p { margin: 0; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+  figure {
+    margin: 26px 0;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  figure.wide { width: min(1180px, calc(100vw - 32px)); position: relative; left: 50%; transform: translateX(-50%); }
+  figure.narrow img { max-width: 720px; margin: 0 auto; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { color: var(--ink-2); font-size: 14px; margin: 10px 4px 2px; }
+  figcaption b { color: var(--accent); }
+  .table-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--rule); border-radius: 12px; margin: 14px 0 6px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; vertical-align: bottom; color: var(--accent); font-weight: 600; line-height: 1.3; padding: 9px 10px; border-bottom: 2px solid var(--accent-3); }
+  th:not(:first-child) { text-align: right; }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; }
+  .table-caption { color: var(--ink-2); font-size: 14px; margin: 0 4px 20px; }
+  .math { overflow-x: auto; background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; margin: 14px 0; }
+  math { font-size: 1.12em; }
+  .math math { margin: 6px 0; }
+  ol.timeline { list-style: none; padding: 0; margin: 16px 0; }
+  ol.timeline li { display: grid; grid-template-columns: 9.5em 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--rule); max-width: none; }
+  ol.timeline li:last-child { border-bottom: none; }
+  ol.timeline .when { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+  @media (max-width: 560px) {
+    ol.timeline li { grid-template-columns: 1fr; gap: 2px; }
+  }
+  footer { color: var(--ink-2); font-size: 13px; margin-top: 56px; border-top: 1px solid var(--rule); padding-top: 14px; }
+  @media print {
+    body { background: #fff; }
+    figure.wide { width: 100%; left: 0; transform: none; }
+    figure, .table-wrap, .math { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <p class="eyebrow">Progress report · CMSC498Z / CMSC838B · Fall 2026</p>
+  <h1>Differentiable Ancilla Reuse</h1>
+  <p class="byline">Evan and Ryan · November 17, 2026</p>
+</header>
+
+<div class="objective">
+  We want to learn when ancilla qubits should be uncomputed and reused, by relaxing those decisions into
+  differentiable probabilities, so that circuits need fewer simultaneous qubits without a significant loss in
+  fidelity or increase in depth.
+</div>
+
+<section class="status" aria-labelledby="status-title">
+  <h2 id="status-title">Where the project stands</h2>
+  <p>
+    The full method is built and verified on two small circuits. Gradient descent chose the same schedule as checking
+    every schedule by brute force in {{all_matches}} of the settings we tried, and freeing ancillas saved one qubit on
+    both circuits. What remains is showing the method on circuits too large to check exhaustively, and comparing it
+    with existing tools.
+  </p>
+  <div class="meter-row">
+    <div class="meter" role="img" aria-label="4 of 6 stages complete">
+      <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span>
+    </div>
+    <span class="meter-label">4 of 6 stages complete</span>
+  </div>
+  <ol class="stages">
+    <li>
+      <div class="stage-head"><span class="stage-num">1</span><span class="stage-title">Frame the decision</span><span class="pill">Done</span></div>
+      <p>Every gap between two uses of an ancilla becomes a hold-or-free choice. Two test circuits built, with 8 and 9 qubits.</p>
+    </li>
+    <li>
+      <div class="stage-head"><span class="stage-num">2</span><span class="stage-title">Simulate exactly</span><span class="pill">Done</span></div>
+      <p>A noisy density-matrix simulator, cross-checked against PennyLane and an independent simulator; 115 passing tests.</p>
+    </li>
+    <li>
+      <div class="stage-head"><span class="stage-num">3</span><span class="stage-title">Make it differentiable</span><span class="pill">Done</span></div>
+      <p>Soft hold-or-free probabilities, a smooth peak-qubit penalty and exact fidelity combine into one loss trained by gradient descent.</p>
+    </li>
+    <li>
+      <div class="stage-head"><span class="stage-num">4</span><span class="stage-title">Learn and verify</span><span class="pill">Done</span></div>
+      <p>Training matches brute force at {{toy_matches}} toy and {{bench2_matches}} benchmark 2 settings, across 4 noise levels.</p>
+    </li>
+    <li class="next">
+      <div class="stage-head"><span class="stage-num">5</span><span class="stage-title">Scale up</span><span class="pill">Next</span></div>
+      <p>Generated circuits with many decisions and a cheap fidelity estimate, where brute force is no longer possible.</p>
+    </li>
+    <li class="next">
+      <div class="stage-head"><span class="stage-num">6</span><span class="stage-title">Compare with existing tools</span><span class="pill">Next</span></div>
+      <p>A greedy method and Reqomp, a published uncomputation tool, at the same qubit budgets.</p>
+    </li>
+  </ol>
+</section>
+
+<h2>The decision we optimize</h2>
+<p>
+  An ancilla is a scratch qubit that holds an intermediate value, such as <i>a</i> = c1 AND c2. When that value
+  is used more than once, the gap between two uses offers a choice:
+</p>
+<ul>
+  <li><strong>Hold</strong> the ancilla through the gap. This keeps a qubit occupied and exposes it to idle
+    decay.</li>
+  <li><strong>Free</strong> it: uncompute it right after the earlier use and recompute it right before the later
+    use. The qubit can host another ancilla in between, which lowers the peak number of live ancillas, but the
+    circuit gains two extra Toffoli gates and some depth.</li>
+</ul>
+<p>
+  Without noise every schedule computes the same state, so the only tradeoff is qubits against depth. With noise,
+  fidelity becomes a third axis: holding loses fidelity to idle decay, freeing loses it to the extra gates.
+  Figure 1 shows the two circuits we built to study this, with each decision's gap marked.
+</p>
+
+<figure class="narrow">
+  <img src="../figures/circuits.png" alt="Gate diagrams of the toy circuit and benchmark 2, with ancilla lifetimes shaded, the decision gaps hatched, and live-ancilla counts for the hold-all and free-all schedules under each circuit.">
+  <figcaption><b>Figure 1.</b> The toy circuit has one decision (a_gap); benchmark 2 reuses <i>a</i> three times
+    and has two decisions (a_gap1, a_gap2). Freeing every gap lowers the peak from 2 live ancillas to 1. On
+    benchmark 2, freeing only one gap leaves the peak at 2, so the two decisions only pay off together.</figcaption>
+</figure>
+
+<h2>Method</h2>
+<p>
+  Each decision <i>i</i> gets a trainable logit <i>z<sub>i</sub></i> and a probability of freeing
+  <i>r<sub>i</sub></i> = σ(<i>z<sub>i</sub></i>). We minimize
+</p>
+<div class="math">
+  <math display="block">
+    <mrow>
+      <mi>L</mi><mo>(</mo><mi>z</mi><mo>)</mo><mo>=</mo>
+      <mo>(</mo><mn>1</mn><mo>−</mo><mi>F</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>)</mo>
+      <mo>+</mo>
+      <msub><mi>λ</mi><mi>a</mi></msub>
+      <mo>⁢</mo>
+      <msub><mi mathvariant="normal">SmoothMax</mi><mi>β</mi></msub>
+      <mo>(</mo><mi>x</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>)</mo>
+      <mo>+</mo>
+      <msub><mi>λ</mi><mi>d</mi></msub>
+      <munder><mo>∑</mo><mi>i</mi></munder>
+      <msub><mi>r</mi><mi>i</mi></msub>
+      <msub><mi mathvariant="normal">Δ</mi><mi>i</mi></msub>
+      <mo>,</mo>
+      <mspace width="1em"/>
+      <mi>r</mi><mo>=</mo><mi>σ</mi><mo>(</mo><mi>z</mi><mo>)</mo>
+    </mrow>
+  </math>
+  <math display="block">
+    <mrow>
+      <msub><mi mathvariant="normal">SmoothMax</mi><mi>β</mi></msub><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+      <mfrac><mn>1</mn><mi>β</mi></mfrac>
+      <mi>log</mi>
+      <munder><mo>∑</mo><mi>t</mi></munder>
+      <msup><mi>e</mi><mrow><mi>β</mi><msub><mi>x</mi><mi>t</mi></msub></mrow></msup>
+      <mo>,</mo>
+      <mspace width="1em"/>
+      <mi>F</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>=</mo>
+      <mo>⟨</mo><mi>ψ</mi><mo>|</mo>
+      <munder><mo>∑</mo><mi>d</mi></munder>
+      <mi>w</mi><mo>(</mo><mi>d</mi><mo>)</mo>
+      <msub><mi>ρ</mi><mi>d</mi></msub>
+      <mo>|</mo><mi>ψ</mi><mo>⟩</mo>
+    </mrow>
+  </math>
+</div>
+<ul>
+  <li><strong>Fidelity.</strong> Each discrete schedule <i>d</i> ∈ {0,1}<sup><i>N</i></sup> is simulated once as a
+    noisy density matrix ρ<sub><i>d</i></sub>. The soft circuit is the mixture weighted by
+    <i>w</i>(<i>d</i>) = ∏<sub><i>i</i></sub> <i>r<sub>i</sub></i><sup><i>d<sub>i</sub></i></sup>(1 − <i>r<sub>i</sub></i>)<sup>1 − <i>d<sub>i</sub></i></sup>,
+    so <i>F</i>(<i>r</i>) is exact and differentiable in <i>r</i>. An uncompute and its recompute are always
+    inserted together, as one coin flip.</li>
+  <li><strong>Peak live ancillas.</strong> <i>x<sub>t</sub></i>(<i>r</i>) is the expected number of live ancillas at
+    step <i>t</i>: a freed ancilla counts 1 − <i>r<sub>i</sub></i> inside its gap. A log-sum-exp SmoothMax turns
+    the peak into a differentiable term, with β annealed from 2 to 20 during training.</li>
+  <li><strong>Depth.</strong> Δ<sub><i>i</i></sub> is the exact extra depth from freeing decision <i>i</i> alone,
+    measured on the circuit after qubit reassignment. λ<sub><i>d</i></sub> = {{lam_d}} throughout.</li>
+  <li><strong>Training and evaluation.</strong> Adam on <i>z</i> for {{steps}} steps from <i>r</i> = 0.5. Each
+    <i>r<sub>i</sub></i> is then rounded to 0 or 1, ancillas are reassigned to shared physical qubits by greedy
+    interval colouring, and every reported number is measured exactly on that one circuit.</li>
+  <li><strong>Noise.</strong> Depolarizing noise after every gate, amplitude and phase damping on every idle qubit
+    in every layer. At noise scale <i>s</i> = 1: {{noise}}. Scale <i>s</i> multiplies the error rates and divides
+    T<sub>1</sub> and T<sub>2</sub>.</li>
+</ul>
+
+<h2>Work completed</h2>
+<ul>
+  <li><strong>Data model</strong> for circuits with ancillas and decision gaps, with validity checks, schedule
+    construction and qubit reassignment.</li>
+  <li><strong>Density-matrix simulator</strong> in JAX with the noise channels above, cross-checked against
+    PennyLane and an independent NumPy simulator (they agree to 4 decimals on every schedule).</li>
+  <li><strong>Exact evaluation and baselines:</strong> peak ancillas, physical qubits, depth, gate counts and
+    fidelity; no reuse, hold with reassignment, and brute force over every schedule with exact flip points.</li>
+  <li><strong>Differentiable optimizer:</strong> the loss above, Adam training with β annealing, and a λ<sub>a</sub>
+    sweep compiled once for all λ<sub>a</sub> values and noise scales.</li>
+  <li><strong>Experiments:</strong> both benchmarks swept over 21 values of λ<sub>a</sub> from 0.01 to 0.3 at four
+    noise scales, plus a loss-landscape study for benchmark 2. 115 tests pass, including gradient checks and
+    hand-computed tables for both circuits.</li>
+</ul>
+
+<h2>Results: toy circuit</h2>
+<p>Table 1 measures each schedule exactly. Freeing saves one qubit and costs two layers and 12 two-qubit-equivalent
+  gates (a Toffoli counts as 6).</p>
+{{toy_table}}
+<p class="table-caption"><b>Table 1.</b> Toy circuit schedules. F is the fidelity to the noiseless target state.</p>
+
+<figure>
+  <img src="../figures/toy_lambda_sweep.png" alt="Final probability of freeing versus lambda_a on a log axis, one line per noise scale, each jumping from 0 to 1 at its dashed brute-force flip point.">
+  <figcaption><b>Figure 2.</b> Toy circuit: the trained decision after rounding equals the brute-force optimum at
+    {{toy_matches}} points (21 values of λ<sub>a</sub> × 4 noise scales). Brute-force flip points:
+    {{toy_flips}} at <i>s</i> = 0, 0.5, 1, 2.</figcaption>
+</figure>
+
+<div class="callout">
+  <p><strong>Why the flip points land where they do.</strong> Freeing lowers the peak by one ancilla, so the exact
+    objective switches from hold to free once λ<sub>a</sub> exceeds the fidelity lost plus the depth penalty:</p>
+  <div class="math">
+    <math display="block">
+      <mrow>
+        <msubsup><mi>λ</mi><mi>a</mi><mo>*</mo></msubsup><mo>=</mo>
+        <mo>(</mo><msub><mi>F</mi><mtext>hold</mtext></msub><mo>−</mo><msub><mi>F</mi><mtext>free</mtext></msub><mo>)</mo>
+        <mo>+</mo><msub><mi>λ</mi><mi>d</mi></msub><mo>⁢</mo>
+        <mo>(</mo><msub><mi>D</mi><mtext>free</mtext></msub><mo>−</mo><msub><mi>D</mi><mtext>hold</mtext></msub><mo>)</mo>
+      </mrow>
+    </math>
+  </div>
+  <p>Table 2 checks this against brute force for both circuits. It also explains why the toy's flip point barely
+    moves from <i>s</i> = 1 to <i>s</i> = 2: both fidelities fall, so the absolute gap between them stops growing.
+    With a single decision the answer can be read off the table, so the toy validates the pipeline but cannot
+    show what gradients add. Benchmark 2 is the first step past that.</p>
+</div>
+{{flip_check}}
+<p class="table-caption"><b>Table 2.</b> Predicted flip points (analytic, from Tables 1 and 3) against the
+  brute-force flip points. On benchmark 2 the comparison is hold-all (00) against free-all (11).</p>
+
+<h2>Results: benchmark 2</h2>
+<p>
+  Benchmark 2 reuses <i>a</i> three times, with a different ancilla needed in each gap. Table 3 shows the
+  coupling: schedules 01 and 10 keep the peak at 2 while paying for extra gates and depth, so the only schedule
+  worth switching to is 11. Freeing gap 2 costs more depth than gap 1 (+4 against +2 layers), because c's compute
+  shares a control qubit with a's recompute.
+</p>
+{{bench2_table}}
+<p class="table-caption"><b>Table 3.</b> Benchmark 2 schedules (d lists a_gap1 then a_gap2). Brute-force flip
+  points from 00 to 11: {{bench2_flips}} at <i>s</i> = 0, 0.5, 1, 2. The flip point is not monotone in noise, for
+  the same reason as on the toy.</p>
+
+<figure class="wide">
+  <img src="../figures/bench2_lambda_sweep.png" alt="Two panels, one per decision, showing final probability of freeing versus lambda_a for each noise scale, with both decisions flipping together at the brute-force flip points.">
+  <figcaption><b>Figure 3.</b> Benchmark 2: training matches brute force at {{bench2_matches}} points, and both
+    decisions flip together at every noise scale. Just above each flip point, the more expensive a_gap2 ends
+    slightly less certain than a_gap1.</figcaption>
+</figure>
+
+<figure class="wide">
+  <img src="../figures/bench2_landscape.png" alt="Three contour plots of the soft loss over the probabilities of freeing each gap, at lambda_a 0.1, 0.22 and 0.3 with noise scale 1, each with the training path drawn from the centre.">
+  <figcaption><b>Figure 4.</b> Soft loss over (<i>r</i><sub>1</sub>, <i>r</i><sub>2</sub>) at noise scale
+    <i>s</i> = 1, with training paths from <i>r</i> = (0.5, 0.5). The 01 and 10 corners are the high-loss corners
+    in every panel. Below the flip point training goes straight to 00. Above it, a diagonal valley leads to 11;
+    training first drifts toward holding while β is small, then turns and climbs the valley. Every run ends at the
+    brute-force optimum.</figcaption>
+</figure>
+
+<h2>Limitations</h2>
+<ul>
+  <li>Both circuits have one or two decisions, so brute force solves them instantly. These results validate the
+    pipeline and the relaxation; they do not yet show an advantage for gradients.</li>
+  <li>The exact mixture simulates all 2<sup><i>N</i></sup> schedules, which limits it to a handful of decisions on
+    at most 12 qubits.</li>
+  <li>Decisions are written by hand for each circuit.</li>
+  <li>With 1 − F, fidelity differences shrink as noise grows, which flattens the flip point at high noise.</li>
+  <li>All results use one illustrative noise model.</li>
+</ul>
+
+<h2>Remaining work</h2>
+<ol class="timeline">
+  <li><span class="when">Nov 17-24</span><span>Replace 1 − F with −log F so the fidelity penalty grows steadily
+    with noise; add random initial logits over several seeds and a β-schedule ablation.</span></li>
+  <li><span class="when">Nov 24-Dec 3</span><span>A parametrized benchmark generator (one value reused <i>k</i>
+    times) for larger instances; a cheap fidelity surrogate, validated against the exact mixture, so the number of
+    decisions can grow; a greedy baseline.</span></li>
+  <li><span class="when">Dec 3-10</span><span>Comparison with Reqomp (Paradis et al., 2024) at fixed qubit
+    budgets using our budget mode; tradeoff curves and runtime against the number of decisions.</span></li>
+  <li><span class="when">Dec 10-17</span><span>Final website, presentation and demo (December 17).</span></li>
+</ol>
+
+<h2>Expected results</h2>
+<ul>
+  <li>On small instances, trained schedules continue to match brute force, including on generated circuits with
+    more coupled decisions.</li>
+  <li>With −log F, the flip point rises steadily with noise.</li>
+  <li>Greedy is competitive while the number of decisions is small; the differentiable approach is most useful once
+    brute force is out of reach, and when it is combined with other differentiable terms.</li>
+  <li>Against Reqomp, the noise-aware objective chooses differently from a gate-minimizing one when two schedules use
+    the same number of qubits but differ in noise exposure.</li>
+</ul>
+
+<footer>
+  Tables, flip points and match counts on this page are filled in from saved experiment results. Simulation: JAX density matrices;
+  noise scales <i>s</i> ∈ {0, 0.5, 1, 2}; λ<sub>d</sub> = {{lam_d}}; {{steps}} Adam steps per run.
+</footer>
+
+</main>
+</body>
+</html>
