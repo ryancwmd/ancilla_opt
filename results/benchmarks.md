@@ -1,5 +1,5 @@
 # Benchmarks: baselines and brute force
-Backend: B: circuits.reference_run_discrete (numpy cross-check). lam_d = 0.01. Git 74dca3c.
+Backend: A: sim.run_discrete. lam_d = 0.01. Git 59fa5a4.
 
 ## toy (8 qubits, decisions ['a_gap'], extra_depth [2], extra_2q [12])
 

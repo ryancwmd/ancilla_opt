@@ -1,6 +1,10 @@
 {
  "config": {
-  "script": "experiments/toy.py",
+  "script": "experiments/integration.py",
+  "problem": "toy",
+  "decision_ids": [
+   "a_gap"
+  ],
   "backend": "A: sim.run_discrete",
   "lam_d": 0.01,
   "steps": 300,
@@ -19,7 +23,7 @@
    0.01405115826483646,
    0.016655903201784592,
    0.019743504858348197,
-   0.02340347319320716,
+   0.023403473193207163,
    0.02774191114672182,
    0.03288459057846113,
    0.03898059840916188,
@@ -44,7 +48,7 @@
   ],
   "band_rel": 0.15,
   "seed": 0,
-  "git": "958c887",
+  "git": "59fa5a4",
   "noise": {
    "0.0": {
     "p1": 0.0,
@@ -118,7 +122,7 @@
    }
   },
   {
-   "schedule": "free (d = 1)",
+   "schedule": "d = 1",
    "d": [
     1
    ],

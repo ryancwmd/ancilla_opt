@@ -24,6 +24,36 @@ RESULTS = ROOT / "results"
 FIGURES = ROOT / "figures"
 NOISE_SCALES = (0.0, 0.5, 1.0, 2.0)
 
+# Reference palette, light mode, static figures: categorical slots 1-4 in fixed order,
+# and the blue sequential ramp (steps 100-700, light = low).
+SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
+MARKERS = ["o", "s", "^", "D"]
+SEQUENTIAL = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5",
+              "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"]
+INK, INK2, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
+DISPLAY_NAMES = {"toy": "Toy circuit", "bench2": "Benchmark 2"}
+
+
+def display_name(cfg) -> str:
+    return DISPLAY_NAMES.get(cfg["problem"], cfg["problem"])
+
+
+def style_axes(ax):
+    ax.grid(True, color=GRID, linewidth=0.8)
+    ax.set_axisbelow(True)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_color(INK2)
+    ax.tick_params(colors=INK2)
+
+
+def noise_caption(cfg) -> str:
+    n = cfg["noise"][str(1.0)]
+    return ("Noise at s = 1: p1 = %g, p2 = %g, p3 = 1-(1-p2)^6, t_layer = %g µs, T1 = %g µs, T2 = %g µs; "
+            "s scales error rates by s and T1, T2 by 1/s. lam_d = %g. %s"
+            % (n["p1"], n["p2"], n["t_layer_us"], n["T1_us"], n["T2_us"], cfg["lam_d"], cfg["backend"]))
+
 
 def have_a() -> bool:
     try:

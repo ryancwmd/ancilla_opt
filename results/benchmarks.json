@@ -1,7 +1,7 @@
 {
  "config": {
   "script": "experiments/benchmarks.py",
-  "backend": "B: circuits.reference_run_discrete (numpy cross-check)",
+  "backend": "A: sim.run_discrete",
   "lam_d": 0.01,
   "noise_scales": [
    0.0,
@@ -9,7 +9,7 @@
    1.0,
    2.0
   ],
-  "git": "74dca3c",
+  "git": "59fa5a4",
   "noise": {
    "0.0": {
     "p1": 0.0,
@@ -232,7 +232,7 @@
        ]
       }
      ],
-     "seconds": 0.05381894111633301
+     "seconds": 0.7760417461395264
     },
     "0.5": {
      "no_reuse": {
@@ -271,7 +271,7 @@
       "two_qubit_equiv": 37,
       "extra_2q": 0,
       "n_gates": 7,
-      "fidelity": 0.7337104902365972
+      "fidelity": 0.7337104902365966
      },
      "hold_all_reassigned": {
       "schedule": "hold_all_reassigned",
@@ -309,7 +309,7 @@
       "two_qubit_equiv": 37,
       "extra_2q": 0,
       "n_gates": 7,
-      "fidelity": 0.7337104902365972
+      "fidelity": 0.7337104902365966
      },
      "table": [
       {
@@ -347,7 +347,7 @@
        "two_qubit_equiv": 37,
        "extra_2q": 0,
        "n_gates": 7,
-       "fidelity": 0.7337104902365972
+       "fidelity": 0.7337104902365966
       },
       {
        "d": [
@@ -390,12 +390,12 @@
        "two_qubit_equiv": 49,
        "extra_2q": 12,
        "n_gates": 9,
-       "fidelity": 0.6845656450726063
+       "fidelity": 0.6845656450726059
       }
      ],
      "flip_thresholds": [
       {
-       "lam_a": 0.06914484516399089,
+       "lam_a": 0.06914484516399078,
        "from": [
         0
        ],
@@ -404,7 +404,7 @@
        ]
       }
      ],
-     "seconds": 0.12009644508361816
+     "seconds": 1.3632936477661133
     },
     "1.0": {
      "no_reuse": {
@@ -562,12 +562,12 @@
        "two_qubit_equiv": 49,
        "extra_2q": 12,
        "n_gates": 9,
-       "fidelity": 0.47452627550612736
+       "fidelity": 0.47452627550612725
       }
      ],
      "flip_thresholds": [
       {
-       "lam_a": 0.08843250570135386,
+       "lam_a": 0.08843250570135397,
        "from": [
         0
        ],
@@ -576,7 +576,7 @@
        ]
       }
      ],
-     "seconds": 0.1154780387878418
+     "seconds": 1.432675838470459
     },
     "2.0": {
      "no_reuse": {
@@ -615,7 +615,7 @@
       "two_qubit_equiv": 37,
       "extra_2q": 0,
       "n_gates": 7,
-      "fidelity": 0.30595807850393875
+      "fidelity": 0.30595807850393936
      },
      "hold_all_reassigned": {
       "schedule": "hold_all_reassigned",
@@ -653,7 +653,7 @@
       "two_qubit_equiv": 37,
       "extra_2q": 0,
       "n_gates": 7,
-      "fidelity": 0.30595807850393875
+      "fidelity": 0.30595807850393936
      },
      "table": [
       {
@@ -691,7 +691,7 @@
        "two_qubit_equiv": 37,
        "extra_2q": 0,
        "n_gates": 7,
-       "fidelity": 0.30595807850393875
+       "fidelity": 0.30595807850393936
       },
       {
        "d": [
@@ -734,7 +734,7 @@
        "two_qubit_equiv": 49,
        "extra_2q": 12,
        "n_gates": 9,
-       "fidelity": 0.23809917364972033
+       "fidelity": 0.23809917364972089
       }
      ],
      "flip_thresholds": [
@@ -748,7 +748,7 @@
        ]
       }
      ],
-     "seconds": 0.1434643268585205
+     "seconds": 1.4549224376678467
     }
    }
   },
@@ -1097,7 +1097,7 @@
        ]
       }
      ],
-     "seconds": 0.25748753547668457
+     "seconds": 7.360762596130371
     },
     "0.5": {
      "no_reuse": {
@@ -1147,7 +1147,7 @@
       "two_qubit_equiv": 56,
       "extra_2q": 0,
       "n_gates": 11,
-      "fidelity": 0.6483962634367704
+      "fidelity": 0.64839626343677
      },
      "hold_all_reassigned": {
       "schedule": "hold_all_reassigned",
@@ -1196,7 +1196,7 @@
       "two_qubit_equiv": 56,
       "extra_2q": 0,
       "n_gates": 11,
-      "fidelity": 0.6483578911187797
+      "fidelity": 0.6483578911187793
      },
      "table": [
       {
@@ -1245,7 +1245,7 @@
        "two_qubit_equiv": 56,
        "extra_2q": 0,
        "n_gates": 11,
-       "fidelity": 0.6483578911187797
+       "fidelity": 0.6483578911187793
       },
       {
        "d": [
@@ -1299,7 +1299,7 @@
        "two_qubit_equiv": 68,
        "extra_2q": 12,
        "n_gates": 13,
-       "fidelity": 0.5599029356620501
+       "fidelity": 0.5599029356620495
       },
       {
        "d": [
@@ -1353,7 +1353,7 @@
        "two_qubit_equiv": 68,
        "extra_2q": 12,
        "n_gates": 13,
-       "fidelity": 0.6052020221016254
+       "fidelity": 0.6052020221016252
       },
       {
        "d": [
@@ -1413,12 +1413,12 @@
        "two_qubit_equiv": 80,
        "extra_2q": 24,
        "n_gates": 15,
-       "fidelity": 0.5233080776452743
+       "fidelity": 0.5233080776452737
       }
      ],
      "flip_thresholds": [
       {
-       "lam_a": 0.18504981347350546,
+       "lam_a": 0.1850498134735057,
        "from": [
         0,
         0
@@ -1429,7 +1429,7 @@
        ]
       }
      ],
-     "seconds": 1.067667007446289
+     "seconds": 5.804432392120361
     },
     "1.0": {
      "no_reuse": {
@@ -1479,7 +1479,7 @@
       "two_qubit_equiv": 56,
       "extra_2q": 0,
       "n_gates": 11,
-      "fidelity": 0.4258906646430803
+      "fidelity": 0.4258906646430801
      },
      "hold_all_reassigned": {
       "schedule": "hold_all_reassigned",
@@ -1528,7 +1528,7 @@
       "two_qubit_equiv": 56,
       "extra_2q": 0,
       "n_gates": 11,
-      "fidelity": 0.425780790954579
+      "fidelity": 0.42578079095457894
      },
      "table": [
       {
@@ -1577,7 +1577,7 @@
        "two_qubit_equiv": 56,
        "extra_2q": 0,
        "n_gates": 11,
-       "fidelity": 0.425780790954579
+       "fidelity": 0.42578079095457894
       },
       {
        "d": [
@@ -1631,7 +1631,7 @@
        "two_qubit_equiv": 68,
        "extra_2q": 12,
        "n_gates": 13,
-       "fidelity": 0.3227936788181134
+       "fidelity": 0.3227936788181132
       },
       {
        "d": [
@@ -1685,7 +1685,7 @@
        "two_qubit_equiv": 68,
        "extra_2q": 12,
        "n_gates": 13,
-       "fidelity": 0.37288976859784584
+       "fidelity": 0.3728897685978458
       },
       {
        "d": [
@@ -1745,7 +1745,7 @@
        "two_qubit_equiv": 80,
        "extra_2q": 24,
        "n_gates": 15,
-       "fidelity": 0.2843233206638418
+       "fidelity": 0.2843233206638417
       }
      ],
      "flip_thresholds": [
@@ -1761,7 +1761,7 @@
        ]
       }
      ],
-     "seconds": 1.0421090126037598
+     "seconds": 5.76503586769104
     },
     "2.0": {
      "no_reuse": {
@@ -1811,7 +1811,7 @@
       "two_qubit_equiv": 56,
       "extra_2q": 0,
       "n_gates": 11,
-      "fidelity": 0.19239012187896043
+      "fidelity": 0.19239012187896096
      },
      "hold_all_reassigned": {
       "schedule": "hold_all_reassigned",
@@ -1860,7 +1860,7 @@
       "two_qubit_equiv": 56,
       "extra_2q": 0,
       "n_gates": 11,
-      "fidelity": 0.19216754455197674
+      "fidelity": 0.1921675445519772
      },
      "table": [
       {
@@ -1909,7 +1909,7 @@
        "two_qubit_equiv": 56,
        "extra_2q": 0,
        "n_gates": 11,
-       "fidelity": 0.19216754455197674
+       "fidelity": 0.1921675445519772
       },
       {
        "d": [
@@ -1963,7 +1963,7 @@
        "two_qubit_equiv": 68,
        "extra_2q": 12,
        "n_gates": 13,
-       "fidelity": 0.11989017004749508
+       "fidelity": 0.11989017004749547
       },
       {
        "d": [
@@ -2017,7 +2017,7 @@
        "two_qubit_equiv": 68,
        "extra_2q": 12,
        "n_gates": 13,
-       "fidelity": 0.15120796145897242
+       "fidelity": 0.15120796145897286
       },
       {
        "d": [
@@ -2077,12 +2077,12 @@
        "two_qubit_equiv": 80,
        "extra_2q": 24,
        "n_gates": 15,
-       "fidelity": 0.09709190518514668
+       "fidelity": 0.09709190518514704
       }
      ],
      "flip_thresholds": [
       {
-       "lam_a": 0.1550756393668301,
+       "lam_a": 0.15507563936683022,
        "from": [
         0,
         0
@@ -2093,7 +2093,7 @@
        ]
       }
      ],
-     "seconds": 1.0658056735992432
+     "seconds": 5.855836629867554
     }
    }
   }

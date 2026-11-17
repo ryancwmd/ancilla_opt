@@ -35,11 +35,11 @@ Checked values on the toy: logical layers 7 and 7, physical layers 7 and 9, and 
 
 - [x] A1–A3: `sim.py`, `noise.py`, `loss.py`, `train.py` (v1 exact mixture; v2 gap-local not built)
 - [x] B1–B3: `problem.py`, `circuits.py`, `evaluate.py`, `baselines.py`, `circuits.bench2()`, `experiments/benchmarks.py`
-- [x] I: `uv run python experiments/toy.py` (~15 s) writes `figures/toy_{training,lambda_sweep}.png`,
-  `results/toy_table.{md,json}` and `results/toy.json`. Trained-and-rounded r matches brute force at all
-  84 sweep points (4 noise scales × 21 λa).
-- [ ] C1–C3: Reqomp. When C2 lands, rerun `toy.py`; it adds Reqomp rows to the table automatically.
-- [ ] Optional: v2 `simulate_mixture`, budget-mode figures, benchmark 2 through the trainer.
+- [x] I: `uv run python experiments/integration.py --problem <toy|bench2>` (toy ~10 s, bench2 ~50 s) writes
+  `figures/<p>_{training,lambda_sweep}.png`, `results/<p>_table.{md,json}` and `results/<p>.json`.
+  Trained-and-rounded r matches brute force at all 84 sweep points (4 noise scales × 21 λa) on both.
+- [ ] C1–C3: Reqomp. When C2 lands, rerun `integration.py`; it adds Reqomp rows to the table automatically.
+- [ ] Optional: v2 `simulate_mixture`, budget-mode figures.
 
 ## Module quick reference
 
@@ -56,6 +56,6 @@ Checked values on the toy: logical layers 7 and 7, physical layers 7 and 9, and 
   `baselines.brute_force(p, noise, lam_a, lam_d, simulator=sim.run_discrete)`; use `baselines.schedule_table`
   with `baselines.flip_thresholds` for exact λa flip points.
 - **C**: the hand-written Problems are in `results/problems/{toy,bench2}.json` (`fill_costs` applied) for the
-  C3 acceptance check. `toy.py` reads `reqomp_adapter/results/toy.json` as a list under `"runs"` with
+  C3 acceptance check. `integration.py` reads `reqomp_adapter/results/<p>.json` as a list under `"runs"` with
   `budget`, `qubits`, `depth`, `two_qubit_equiv`.
 - Noise objects are duck-typed in B's code: anything with `p1`, `p2`, `p3`, `t_layer_us`, `T1_us`, `T2_us`.
